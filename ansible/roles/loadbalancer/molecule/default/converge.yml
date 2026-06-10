@@ -1,0 +1,9 @@
+- name: Converge
+  hosts: all
+  become: true
+  vars:
+    molecule_test: true
+    backend_port: 3001
+    lb_domain: "127-0-0-1.sslip.io"
+  roles:
+    - role: loadbalancer

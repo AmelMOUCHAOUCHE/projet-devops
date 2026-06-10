@@ -1,0 +1,31 @@
+- name: Install awscli and postgresql-client
+  ansible.builtin.apt:
+    name:
+      - awscli
+      - postgresql-client
+    state: present
+    update_cache: true
+
+- name: Create backup directory
+  ansible.builtin.file:
+    path: /opt/backups
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Deploy backup script
+  ansible.builtin.template:
+    src: backup.sh.j2
+    dest: /opt/backups/backup.sh
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Schedule backup cron job
+  ansible.builtin.cron:
+    name: prism-backup
+    minute: "{{ backup_cron_minute }}"
+    hour: "{{ backup_cron_hour }}"
+    job: /opt/backups/backup.sh >> /var/log/prism-backup.log 2>&1
+    user: root

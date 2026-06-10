@@ -1,0 +1,11 @@
+upstream prism_backend {
+{% for host in groups['app'] %}
+    server {{ hostvars[host]['ansible_host'] }}:{{ backend_port }};
+{% endfor %}
+}
+
+upstream prism_frontend {
+{% for host in groups['app'] %}
+    server {{ hostvars[host]['ansible_host'] }}:80;
+{% endfor %}
+}

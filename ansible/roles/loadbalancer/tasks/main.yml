@@ -1,0 +1,65 @@
+- name: Install Nginx and Certbot
+  ansible.builtin.apt:
+    name:
+      - nginx
+      - certbot
+      - python3-certbot-nginx
+    state: present
+    update_cache: true
+
+- name: Create Nginx upstream config
+  ansible.builtin.template:
+    src: upstream.conf.j2
+    dest: /etc/nginx/conf.d/upstream.conf
+    mode: "0644"
+  notify: Reload Nginx
+
+- name: Create Nginx HTTP config
+  ansible.builtin.template:
+    src: prism-http.conf.j2
+    dest: /etc/nginx/sites-available/prism
+    mode: "0644"
+  notify: Reload Nginx
+
+- name: Enable site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/prism
+    dest: /etc/nginx/sites-enabled/prism
+    state: link
+
+- name: Remove default site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload Nginx
+
+- name: Ensure Nginx is started
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+
+- name: Obtain Let's Encrypt certificate
+  ansible.builtin.command: >
+    certbot --nginx
+    -d {{ lb_domain }}
+    --non-interactive
+    --agree-tos
+    --email admin@{{ lb_domain }}
+    --redirect
+  args:
+    creates: /etc/letsencrypt/live/{{ lb_domain }}/fullchain.pem
+
+- name: Deploy final HTTPS Nginx config
+  ansible.builtin.template:
+    src: prism-https.conf.j2
+    dest: /etc/nginx/sites-available/prism
+    mode: "0644"
+  notify: Reload Nginx
+
+- name: Setup certbot renewal cron
+  ansible.builtin.cron:
+    name: certbot-renew
+    minute: "0"
+    hour: "3"
+    job: "certbot renew --quiet && systemctl reload nginx"

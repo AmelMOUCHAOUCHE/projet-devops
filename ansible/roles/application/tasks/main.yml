@@ -92,6 +92,15 @@
     mode: "0600"
   when: not (molecule_test | default(false))
 
+- name: Run Prisma migrations
+  ansible.builtin.command:
+    cmd: npx prisma migrate deploy
+    chdir: /var/www/prism/backend
+  become_user: "{{ app_user }}"
+  environment:
+    DATABASE_URL: "{{ vault_database_url }}"
+  when: not (molecule_test | default(false))
+
 - name: Start backend with PM2
   ansible.builtin.command:
     cmd: pm2 start npm --name prism-backend -- run dev

@@ -75,7 +75,7 @@ resource "aws_instance" "app" {
 resource "aws_instance" "database" {
   ami = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
-  subnet_id = aws_subnet.public.id
+  subnet_id = aws_subnet.private.id
   vpc_security_group_ids = [aws_security_group.database.id]
   key_name = aws_key_pair.prism.key_name
   iam_instance_profile = aws_iam_instance_profile.backup_profile.name

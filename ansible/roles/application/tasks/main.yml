@@ -4,6 +4,7 @@
       - git
       - nginx
       - curl
+      - acl
     state: present
     update_cache: true
 
@@ -64,6 +65,15 @@
   become_user: "{{ app_user }}"
   when: not (molecule_test | default(false))
 
+- name: Create public directory required by build script
+  ansible.builtin.file:
+    path: /var/www/prism/frontend/public
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: "0755"
+  when: not (molecule_test | default(false))
+
 - name: Build frontend
   ansible.builtin.command:
     cmd: npm run build
@@ -84,7 +94,7 @@
 
 - name: Start backend with PM2
   ansible.builtin.command:
-    cmd: pm2 start npm --name prism-backend -- start
+    cmd: pm2 start npm --name prism-backend -- run dev
     chdir: /var/www/prism/backend
   args:
     creates: /home/{{ app_user }}/.pm2/pids/prism-backend-0.pid

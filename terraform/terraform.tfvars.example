@@ -1,0 +1,11 @@
+# IP publique
+my_ip = "X.X.X.X/32"
+
+# Chemin vers clé SSH publique
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+
+# Optionnel (valeurs par défaut utilisées si non spécifiées)
+# aws_region    = "eu-west-3"
+# project_name  = "prism"
+# instance_type = "t2.micro"
+# app_count     = 2

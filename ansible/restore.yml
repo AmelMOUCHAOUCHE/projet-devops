@@ -1,0 +1,49 @@
+- name: Restore database from S3 backup
+  hosts: database
+  become: true
+  vars_prompt:
+    - name: backup_filename
+      prompt: "Nom du fichier backup S3 à restaurer (ex: prism_20260610_020000.sql.gz)"
+      private: false
+
+  tasks:
+    - name: Install awscli and postgresql-client
+      ansible.builtin.apt:
+        name:
+          - awscli
+          - postgresql-client
+        state: present
+        update_cache: true
+
+    - name: Download backup from S3
+      ansible.builtin.command: >
+        aws s3 cp s3://{{ s3_bucket_name }}/db/{{ backup_filename }}
+        /opt/backups/{{ backup_filename }}
+        --region {{ aws_region }}
+      args:
+        creates: /opt/backups/{{ backup_filename }}
+
+    - name: Drop existing database
+      community.postgresql.postgresql_db:
+        name: "{{ db_name }}"
+        state: absent
+      become_user: postgres
+
+    - name: Recreate database
+      community.postgresql.postgresql_db:
+        name: "{{ db_name }}"
+        owner: "{{ db_user }}"
+        state: present
+      become_user: postgres
+
+    - name: Restore database from backup
+      ansible.builtin.shell: >
+        gunzip -c /opt/backups/{{ backup_filename }} |
+        psql -h localhost -U {{ db_user }} {{ db_name }}
+      environment:
+        PGPASSWORD: "{{ vault_db_password }}"
+
+    - name: Remove local backup file
+      ansible.builtin.file:
+        path: /opt/backups/{{ backup_filename }}
+        state: absent

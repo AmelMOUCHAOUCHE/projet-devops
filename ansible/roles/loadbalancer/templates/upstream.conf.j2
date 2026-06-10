@@ -1,11 +1,19 @@
 upstream prism_backend {
+{% if 'app' in groups and groups['app'] | length > 0 %}
 {% for host in groups['app'] %}
     server {{ hostvars[host]['ansible_host'] }}:{{ backend_port }};
 {% endfor %}
+{% else %}
+    server 127.0.0.1:{{ backend_port }};
+{% endif %}
 }
 
 upstream prism_frontend {
+{% if 'app' in groups and groups['app'] | length > 0 %}
 {% for host in groups['app'] %}
     server {{ hostvars[host]['ansible_host'] }}:80;
 {% endfor %}
+{% else %}
+    server 127.0.0.1:80;
+{% endif %}
 }

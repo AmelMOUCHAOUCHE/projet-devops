@@ -49,6 +49,7 @@
     --redirect
   args:
     creates: /etc/letsencrypt/live/{{ lb_domain }}/fullchain.pem
+  when: not (molecule_test | default(false))
 
 - name: Deploy final HTTPS Nginx config
   ansible.builtin.template:
@@ -56,6 +57,7 @@
     dest: /etc/nginx/sites-available/prism
     mode: "0644"
   notify: Reload Nginx
+  when: not (molecule_test | default(false))
 
 - name: Setup certbot renewal cron
   ansible.builtin.cron:
@@ -63,3 +65,4 @@
     minute: "0"
     hour: "3"
     job: "certbot renew --quiet && systemctl reload nginx"
+  when: not (molecule_test | default(false))

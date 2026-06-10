@@ -1,0 +1,13 @@
+- name: Converge
+  hosts: all
+  become: true
+  vars:
+    molecule_test: true
+    backend_port: 3001
+    node_version: "20"
+    db_name: prism
+    db_user: prism
+    vault_database_url: "postgresql://prism:test@127.0.0.1:5432/prism"
+    app_user: root
+  roles:
+    - role: application

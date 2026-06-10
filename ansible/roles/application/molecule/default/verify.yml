@@ -1,0 +1,25 @@
+- name: Verify
+  hosts: all
+  become: true
+  tasks:
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Assert Nginx is running
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services['nginx.service'].state == 'running'
+        fail_msg: "Nginx is not running"
+
+    - name: Assert port 80 is listening
+      ansible.builtin.wait_for:
+        port: 80
+        timeout: 5
+
+    - name: Assert Node.js is installed
+      ansible.builtin.command: node --version
+      changed_when: false
+
+    - name: Assert PM2 is installed
+      ansible.builtin.command: pm2 --version
+      changed_when: false

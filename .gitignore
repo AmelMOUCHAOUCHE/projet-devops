@@ -6,7 +6,8 @@ terraform.tfvars
 crash.log
 
 # Ansible
-ansible/inventories/hosts.yml
+ansible/inventory/hosts.yml
+ansible/group_vars/all/vault.yml
 *.retry
 .vault_pass
 

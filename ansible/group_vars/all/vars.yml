@@ -1,0 +1,7 @@
+db_name: prism
+db_user: prism
+backend_port: 3001
+node_version: "20"
+backup_retention_days: 7
+backup_cron_hour: "2"
+backup_cron_minute: "0"

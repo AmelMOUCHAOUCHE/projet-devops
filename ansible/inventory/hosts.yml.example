@@ -1,0 +1,24 @@
+all:
+  vars:
+    ansible_user: ubuntu
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa
+    s3_bucket_name: "prism-backups-xxxx"
+    aws_region: "eu-west-3"
+    db_private_ip: "10.0.1.xxx"
+
+loadbalancer:
+  hosts:
+    lb:
+      ansible_host: X.X.X.X
+
+app:
+  hosts:
+    app-1:
+      ansible_host: X.X.X.X
+    app-2:
+      ansible_host: X.X.X.X
+
+database:
+  hosts:
+    db:
+      ansible_host: X.X.X.X

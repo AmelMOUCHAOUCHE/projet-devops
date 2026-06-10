@@ -1,0 +1,2 @@
+vault_db_password: "change_me"
+vault_database_url: "postgresql://prism:change_me@DB_PRIVATE_IP:5432/prism"

@@ -1,0 +1,11 @@
+- name: Converge
+  hosts: all
+  become: true
+  vars:
+    db_name: prism
+    db_user: prism
+    vault_db_password: "TestPassword123!"
+    postgresql_version: "14"
+    app_subnet: "10.0.1.0/24"
+  roles:
+    - role: database

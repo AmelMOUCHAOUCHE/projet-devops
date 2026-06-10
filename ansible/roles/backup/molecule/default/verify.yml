@@ -1,0 +1,26 @@
+- name: Verify
+  hosts: all
+  become: true
+  tasks:
+    - name: Assert backup script exists
+      ansible.builtin.stat:
+        path: /opt/backups/backup.sh
+      register: backup_script
+
+    - name: Assert backup script is present and executable
+      ansible.builtin.assert:
+        that:
+          - backup_script.stat.exists
+          - backup_script.stat.executable
+        fail_msg: "Backup script is missing or not executable"
+
+    - name: Assert cron job is configured
+      ansible.builtin.command: crontab -l -u root
+      register: crontab_output
+      changed_when: false
+
+    - name: Assert backup cron entry exists
+      ansible.builtin.assert:
+        that:
+          - "'backup.sh' in crontab_output.stdout"
+        fail_msg: "Backup cron job not found"

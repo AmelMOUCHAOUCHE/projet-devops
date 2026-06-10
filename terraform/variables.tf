@@ -44,3 +44,9 @@ variable "my_ip" {
   description = "IP publique pour l'accès SSH (format : x.x.x.x/32)"
   type = string
 }
+
+variable "private_subnet_cidr" {
+  description = "Plage d'adresses du sous-réseau privé (DB)"
+  type        = string
+  default     = "10.0.2.0/24"
+}

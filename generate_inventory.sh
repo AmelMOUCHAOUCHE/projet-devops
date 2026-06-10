@@ -14,7 +14,7 @@ echo "Lecture des outputs Terraform..."
 cd "$TERRAFORM_DIR"
 
 LB_IP=$(terraform output -raw lb_public_ip)
-DB_IP=$(terraform output -raw db_public_ip)
+DB_IP=$(terraform output -raw db_private_ip)
 DB_PRIVATE_IP=$(terraform output -raw db_private_ip)
 S3_BUCKET=$(terraform output -raw s3_bucket_name)
 AWS_REGION=$(terraform output -raw aws_region)

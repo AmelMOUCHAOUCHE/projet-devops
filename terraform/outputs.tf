@@ -8,10 +8,7 @@ output "app_public_ips" {
   value = aws_instance.app[*].public_ip
 }
 
-output "db_public_ip" {
-  description = "IP publique de la VM base de données"
-  value = aws_instance.database.public_ip
-}
+
 
 output "db_private_ip" {
   description = "IP privée de la VM base de données"

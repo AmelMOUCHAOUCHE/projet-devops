@@ -1,2 +1,3 @@
 vault_db_password: "change_me"
 vault_database_url: "postgresql://prism:change_me@DB_PRIVATE_IP:5432/prism"
+vault_github_token: "github_personal_access_token"

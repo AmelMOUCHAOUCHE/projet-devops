@@ -43,6 +43,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "backups" {
     id = "backup-retention"
     status = "Enabled"
 
+    filter {}
+
     expiration {
       days = 30
     }

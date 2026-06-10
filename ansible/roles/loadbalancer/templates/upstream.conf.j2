@@ -1,7 +1,7 @@
 upstream prism_backend {
 {% if 'app' in groups and groups['app'] | length > 0 %}
 {% for host in groups['app'] %}
-    server {{ hostvars[host]['ansible_host'] }}:{{ backend_port }};
+    server {{ hostvars[host]['private_ip'] }}:{{ backend_port }};
 {% endfor %}
 {% else %}
     server 127.0.0.1:{{ backend_port }};
@@ -11,7 +11,7 @@ upstream prism_backend {
 upstream prism_frontend {
 {% if 'app' in groups and groups['app'] | length > 0 %}
 {% for host in groups['app'] %}
-    server {{ hostvars[host]['ansible_host'] }}:80;
+    server {{ hostvars[host]['private_ip'] }}:80;
 {% endfor %}
 {% else %}
     server 127.0.0.1:80;

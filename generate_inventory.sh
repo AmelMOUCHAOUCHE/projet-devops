@@ -24,6 +24,10 @@ APP_IPS_JSON=$(terraform output -json app_public_ips)
 APP_IP_1=$(echo "$APP_IPS_JSON" | python3 -c "import sys,json; ips=json.load(sys.stdin); print(ips[0])")
 APP_IP_2=$(echo "$APP_IPS_JSON" | python3 -c "import sys,json; ips=json.load(sys.stdin); print(ips[1])")
 
+APP_PRIVATE_IPS_JSON=$(terraform output -json app_private_ips)
+APP_PRIVATE_IP_1=$(echo "$APP_PRIVATE_IPS_JSON" | python3 -c "import sys,json; ips=json.load(sys.stdin); print(ips[0])")
+APP_PRIVATE_IP_2=$(echo "$APP_PRIVATE_IPS_JSON" | python3 -c "import sys,json; ips=json.load(sys.stdin); print(ips[1])")
+
 cd - > /dev/null
 
 echo "Génération de $INVENTORY_FILE..."
@@ -35,7 +39,7 @@ cat > "$INVENTORY_FILE" <<EOF
 all:
   vars:
     ansible_user: ubuntu
-    ansible_ssh_private_key_file: ~/.ssh/id_rsa
+    ansible_ssh_private_key_file: ~/.ssh/prism_key
     ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
     s3_bucket_name: "${S3_BUCKET}"
     aws_region: "${AWS_REGION}"
@@ -50,8 +54,10 @@ app:
   hosts:
     app-1:
       ansible_host: ${APP_IP_1}
+      private_ip: ${APP_PRIVATE_IP_1}
     app-2:
       ansible_host: ${APP_IP_2}
+      private_ip: ${APP_PRIVATE_IP_2}
 
 database:
   hosts:

@@ -92,13 +92,13 @@ resource "aws_security_group" "app" {
 }
 
 
-# Security Group - Base de données
+# Security Group - Base de donnees
 # PostgreSQL accessible uniquement depuis les VMs
 # Pas d'accès HTTP/HTTPS depuis internet
 # SSH restreint à my_ip (accès admin direct)
 resource "aws_security_group" "database" {
   name = "${var.project_name}-db-sg"
-  description = "Security group de la VM base de données"
+  description = "Security group de la VM base de donnees"
   vpc_id = aws_vpc.main.id
 
   ingress {

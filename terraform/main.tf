@@ -75,3 +75,17 @@ resource "aws_route_table_association" "public" {
   subnet_id = aws_subnet.public.id
   route_table_id = aws_route_table.public.id
 }
+
+
+# Sous-réseau privé pour la DB (non exposé sur Internet)
+resource "aws_subnet" "private" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.private_subnet_cidr
+  availability_zone       = "${var.aws_region}a"
+  map_public_ip_on_launch = false
+
+  tags = {
+    Name    = "${var.project_name}-private-subnet"
+    Project = var.project_name
+  }
+}

@@ -110,11 +110,11 @@ resource "aws_security_group" "database" {
   }
 
   ingress {
-    description = "SSH pour Ansible"
+    description = "SSH via ProxyJump depuis les VMs applicatives"
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks = [var.my_ip]
+    security_groups = [aws_security_group.app.id]
   }
 
   egress {

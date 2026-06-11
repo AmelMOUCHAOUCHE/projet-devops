@@ -37,3 +37,8 @@ output "aws_region" {
   description = "Région AWS du déploiement"
   value = var.aws_region
 }
+
+output "ssh_private_key_path" {
+  description = "Chemin vers la clé SSH privée"
+  value = replace(var.ssh_public_key_path, ".pub", "")
+}

@@ -4,124 +4,48 @@
       - git
       - nginx
       - curl
-      - acl
     state: present
     update_cache: true
 
-- name: Install Node.js {{ node_version }}
+- name: Install Node.js 20
   ansible.builtin.shell: |
-    curl -fsSL https://deb.nodesource.com/setup_{{ node_version }}.x | bash -
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
     apt-get install -y nodejs
   args:
     creates: /usr/bin/node
-
-- name: Install PM2
-  community.general.npm:
-    name: pm2
-    global: true
-    state: present
 
 - name: Create app directories
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    owner: "{{ app_user }}"
-    group: "{{ app_user }}"
+    owner: ubuntu
+    group: ubuntu
     mode: "0755"
   loop:
     - /var/www/prism
-    - /var/www/prism/backend
     - /var/www/prism/frontend
-
-- name: Clone backend repository
-  ansible.builtin.git:
-    repo: "https://{{ vault_github_token }}@github.com/kofiae/prism-backend.git"
-    dest: /var/www/prism/backend
-    version: main
-    force: true
-  become_user: "{{ app_user }}"
-  when: not (molecule_test | default(false))
 
 - name: Clone frontend repository
   ansible.builtin.git:
-    repo: "https://{{ vault_github_token }}@github.com/kofiae/prism-frontend.git"
+    repo: "https://github.com/kofiae/prism-frontend.git"
     dest: /var/www/prism/frontend
     version: main
     force: true
-  become_user: "{{ app_user }}"
-  when: not (molecule_test | default(false))
-
-- name: Install backend dependencies
-  community.general.npm:
-    path: /var/www/prism/backend
-    state: present
-  become_user: "{{ app_user }}"
+  become_user: ubuntu
   when: not (molecule_test | default(false))
 
 - name: Install frontend dependencies
   community.general.npm:
     path: /var/www/prism/frontend
     state: present
-  become_user: "{{ app_user }}"
-  when: not (molecule_test | default(false))
-
-- name: Create public directory required by build script
-  ansible.builtin.file:
-    path: /var/www/prism/frontend/public
-    state: directory
-    owner: "{{ app_user }}"
-    group: "{{ app_user }}"
-    mode: "0755"
+  become_user: ubuntu
   when: not (molecule_test | default(false))
 
 - name: Build frontend
   ansible.builtin.command:
-    cmd: npm run build
+    cmd: npx vite build --outDir build
     chdir: /var/www/prism/frontend
-  environment:
-    VITE_API_URL: /api
-  become_user: "{{ app_user }}"
-  when: not (molecule_test | default(false))
-
-- name: Deploy backend .env
-  ansible.builtin.template:
-    src: backend.env.j2
-    dest: /var/www/prism/backend/.env
-    owner: "{{ app_user }}"
-    group: "{{ app_user }}"
-    mode: "0600"
-  when: not (molecule_test | default(false))
-
-- name: Run Prisma migrations
-  ansible.builtin.command:
-    cmd: npx prisma migrate deploy
-    chdir: /var/www/prism/backend
-  become_user: "{{ app_user }}"
-  environment:
-    DATABASE_URL: "{{ vault_database_url }}"
-  when: not (molecule_test | default(false))
-
-- name: Start backend with PM2
-  ansible.builtin.command:
-    cmd: pm2 start npm --name prism-backend -- run dev
-    chdir: /var/www/prism/backend
-  args:
-    creates: /home/{{ app_user }}/.pm2/pids/prism-backend-0.pid
-  become_user: "{{ app_user }}"
-  environment:
-    NODE_ENV: production
-    PORT: "{{ backend_port }}"
-  when: not (molecule_test | default(false))
-
-- name: Save PM2 process list
-  ansible.builtin.command: pm2 save
-  become_user: "{{ app_user }}"
-  changed_when: false
-  when: not (molecule_test | default(false))
-
-- name: Enable PM2 startup on boot
-  ansible.builtin.command: pm2 startup systemd -u {{ app_user }} --hp /home/{{ app_user }}
-  changed_when: false
+  become_user: ubuntu
   when: not (molecule_test | default(false))
 
 - name: Deploy Nginx config for app VM

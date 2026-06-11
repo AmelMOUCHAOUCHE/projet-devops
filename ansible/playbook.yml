@@ -1,9 +1,3 @@
-- name: Configure database
-  hosts: database
-  become: true
-  roles:
-    - database
-
 - name: Deploy application
   hosts: app
   become: true
@@ -15,6 +9,12 @@
   become: true
   roles:
     - loadbalancer
+
+- name: Configure database
+  hosts: database
+  become: true
+  roles:
+    - database
 
 - name: Configure backups
   hosts: database

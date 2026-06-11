@@ -1,5 +1,5 @@
 # Projet DevOps — Infrastructure Prism
-**URL de l'application :** https://15-237-219-51.sslip.io
+
 **Étudiantes :** Amel MOUCHAOUCHE & Olubusola ODUFEJO OGOE  
 **Promotion :** 4e année EFREI  
 **Repository :** https://github.com/AmelMOUCHAUOCHE/projet-devops

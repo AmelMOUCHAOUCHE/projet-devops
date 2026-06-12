@@ -15,6 +15,7 @@ cd "$TERRAFORM_DIR"
 
 LB_IP=$(terraform output -raw lb_public_ip)
 DB_PRIVATE_IP=$(terraform output -raw db_private_ip)
+CITOOLS_IP=$(terraform output -raw citools_public_ip)
 S3_BUCKET=$(terraform output -raw s3_bucket_name)
 AWS_REGION=$(terraform output -raw aws_region)
 SSH_PRIVATE_KEY=$(terraform output -raw ssh_private_key_path)
@@ -64,6 +65,11 @@ database:
     db:
       ansible_host: ${DB_PRIVATE_IP}
       ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyCommand='ssh -W %h:%p -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${SSH_PRIVATE_KEY} ubuntu@${APP_IP_1}'"
+
+citools:
+  hosts:
+    citools:
+      ansible_host: ${CITOOLS_IP}
 EOF
 
 echo "Inventaire généré avec succès :"
@@ -71,4 +77,5 @@ echo "  Load Balancer : ${LB_IP}"
 echo "  App 1         : ${APP_IP_1}"
 echo "  App 2         : ${APP_IP_2}"
 echo "  Database      : ${DB_PRIVATE_IP} (privée, via ProxyJump ${APP_IP_1})"
+echo "  CI Tools      : ${CITOOLS_IP}"
 echo "  S3 Bucket     : ${S3_BUCKET}"

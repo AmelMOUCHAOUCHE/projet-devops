@@ -45,6 +45,12 @@ variable "my_ip" {
   type = string
 }
 
+variable "citools_instance_type" {
+  description = "Type d'instance EC2 pour l'usine logicielle (Jenkins+SonarQube+Nexus)"
+  type        = string
+  default     = "t3.micro"
+}
+
 variable "private_subnet_cidr" {
   description = "Plage d'adresses du sous-réseau privé (DB)"
   type        = string

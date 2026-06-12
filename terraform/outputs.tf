@@ -38,6 +38,11 @@ output "aws_region" {
   value = var.aws_region
 }
 
+output "citools_public_ip" {
+  description = "IP publique de la VM usine logicielle"
+  value       = aws_instance.citools.public_ip
+}
+
 output "ssh_private_key_path" {
   description = "Chemin vers la clé SSH privée"
   value = replace(var.ssh_public_key_path, ".pub", "")

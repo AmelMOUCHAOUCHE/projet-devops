@@ -71,6 +71,27 @@ resource "aws_instance" "app" {
 }
 
 
+# VM Usine logicielle (Jenkins + SonarQube + Nexus)
+resource "aws_instance" "citools" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.citools_instance_type
+  subnet_id              = aws_subnet.public.id
+  vpc_security_group_ids = [aws_security_group.citools.id]
+  key_name               = aws_key_pair.prism.key_name
+
+  root_block_device {
+    volume_size = 40
+    volume_type = "gp3"
+  }
+
+  tags = {
+    Name = "${var.project_name}-citools"
+    Role = "citools"
+    Project = var.project_name
+  }
+}
+
+
 # VM Base de données (PostgreSQL)
 resource "aws_instance" "database" {
   ami = data.aws_ami.ubuntu.id

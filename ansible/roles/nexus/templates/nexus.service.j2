@@ -6,8 +6,7 @@ After=network.target
 Type=simple
 User={{ nexus_user }}
 Group={{ nexus_user }}
-# Java 11 explicite : ne pas laisser le script detecter le Java systeme (17/21)
-Environment="INSTALL4J_JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64"
+# Le Java utilise est fixe via INSTALL4J_JAVA_HOME_OVERRIDE dans bin/nexus
 ExecStart={{ nexus_install_dir }}/bin/nexus run
 Restart=on-failure
 LimitNOFILE=65536

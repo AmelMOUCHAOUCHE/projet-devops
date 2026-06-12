@@ -3,15 +3,15 @@
   hosts: all
   become: true
   tasks:
-    - name: Check Java 11 is installed
-      ansible.builtin.command: /usr/lib/jvm/java-11-openjdk-amd64/bin/java -version
+    - name: Check Java 8 is installed
+      ansible.builtin.command: /usr/lib/jvm/java-8-openjdk-amd64/bin/java -version
       changed_when: false
       register: java_version
 
-    - name: Assert Java 11 is installed
+    - name: Assert Java 8 is installed
       ansible.builtin.assert:
-        that: "'11' in java_version.stderr or '11' in java_version.stdout"
-        fail_msg: "Java 11 is not installed"
+        that: "'1.8' in java_version.stderr or '1.8' in java_version.stdout"
+        fail_msg: "Java 8 is not installed"
 
     - name: Check nexus user exists
       ansible.builtin.command: id nexus

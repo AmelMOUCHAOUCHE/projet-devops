@@ -1,0 +1,11 @@
+---
+- name: Reload Nginx
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
+
+- name: Restart Nexus
+  ansible.builtin.systemd:
+    name: nexus
+    state: restarted
+    daemon_reload: true

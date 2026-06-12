@@ -1,0 +1,36 @@
+---
+- name: Verify Nexus prerequisites
+  hosts: all
+  become: true
+  tasks:
+    - name: Check Java 11 is installed
+      ansible.builtin.command: /usr/lib/jvm/java-11-openjdk-amd64/bin/java -version
+      changed_when: false
+      register: java_version
+
+    - name: Assert Java 11 is installed
+      ansible.builtin.assert:
+        that: "'11' in java_version.stderr or '11' in java_version.stdout"
+        fail_msg: "Java 11 is not installed"
+
+    - name: Check nexus user exists
+      ansible.builtin.command: id nexus
+      changed_when: false
+
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Assert Nginx is running
+      ansible.builtin.assert:
+        that: ansible_facts.services['nginx.service'].state == 'running'
+        fail_msg: "Nginx is not running"
+
+    - name: Check Nexus nginx site is enabled
+      ansible.builtin.stat:
+        path: /etc/nginx/sites-enabled/nexus
+      register: nexus_site
+
+    - name: Assert Nexus nginx site is enabled
+      ansible.builtin.assert:
+        that: nexus_site.stat.exists
+        fail_msg: "Nexus nginx site is not enabled"

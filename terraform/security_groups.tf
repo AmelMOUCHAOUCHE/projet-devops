@@ -136,7 +136,7 @@ resource "aws_security_group" "database" {
 # Jenkins, SonarQube, Nexus - isolé du réseau applicatif
 resource "aws_security_group" "citools" {
   name        = "${var.project_name}-citools-sg"
-  description = "Security group for CI/CD tools"
+  description = "Security group pour Jenkins, SonarQube et Nexus"
   vpc_id      = aws_vpc.main.id
 
   ingress {

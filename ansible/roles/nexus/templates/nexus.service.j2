@@ -1,0 +1,17 @@
+[Unit]
+Description=Nexus Repository Manager
+After=network.target
+
+[Service]
+Type=simple
+User={{ nexus_user }}
+Group={{ nexus_user }}
+# Java 11 explicite : ne pas laisser le script detecter le Java systeme (17/21)
+Environment="INSTALL4J_JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64"
+ExecStart={{ nexus_install_dir }}/bin/nexus run
+Restart=on-failure
+LimitNOFILE=65536
+TimeoutStartSec=600
+
+[Install]
+WantedBy=multi-user.target

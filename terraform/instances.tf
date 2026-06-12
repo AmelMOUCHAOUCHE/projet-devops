@@ -71,7 +71,7 @@ resource "aws_instance" "app" {
 }
 
 
-# VM Usine logicielle (Jenkins + SonarQube + Nexus)
+# VM Usine logicielle (Jenkins + SonarQube)
 resource "aws_instance" "citools" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.citools_instance_type

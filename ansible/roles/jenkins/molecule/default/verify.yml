@@ -1,0 +1,17 @@
+---
+- name: Verify Jenkins
+  hosts: all
+  become: true
+  tasks:
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Assert Jenkins service is running
+      ansible.builtin.assert:
+        that: ansible_facts.services['jenkins.service'].state == 'running'
+        fail_msg: "Jenkins service is not running"
+
+    - name: Check Jenkins port is listening
+      ansible.builtin.wait_for:
+        port: 8080
+        timeout: 60

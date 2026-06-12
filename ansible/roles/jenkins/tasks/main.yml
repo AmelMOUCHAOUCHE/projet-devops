@@ -1,0 +1,98 @@
+- name: Install Java 21 and dependencies
+  ansible.builtin.apt:
+    name:
+      - openjdk-21-jdk-headless
+      - curl
+      - gnupg
+      - nginx
+      - certbot
+      - python3-certbot-nginx
+    state: present
+    update_cache: true
+
+- name: Add Jenkins GPG key from keyserver
+  ansible.builtin.shell: |
+    gpg --batch --yes --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 7198F4B714ABFC68
+    gpg --batch --yes --export 7198F4B714ABFC68 > /usr/share/keyrings/jenkins-keyring.gpg
+    chmod 644 /usr/share/keyrings/jenkins-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/jenkins-keyring.gpg
+
+- name: Add Jenkins repository
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list.d/jenkins.list
+    line: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.gpg] https://pkg.jenkins.io/debian-stable binary/"
+    create: true
+    mode: "0644"
+
+- name: Update apt cache after adding Jenkins repo
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install Jenkins
+  ansible.builtin.apt:
+    name: jenkins
+    state: present
+    update_cache: true
+
+- name: Create Jenkins systemd override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/jenkins.service.d
+    state: directory
+    mode: "0755"
+
+- name: Force Jenkins to use Java 21
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/jenkins.service.d/java21.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=/usr/lib/jvm/java-21-openjdk-amd64/bin/java -Djava.awt.headless=true -jar /usr/share/java/jenkins.war --webroot=/var/cache/jenkins/war --httpPort=8080
+    mode: "0644"
+  notify: Reload systemd
+
+- name: Ensure Jenkins is started
+  ansible.builtin.service:
+    name: jenkins
+    state: started
+    enabled: true
+
+- name: Wait for Jenkins to be ready
+  ansible.builtin.wait_for:
+    port: "{{ jenkins_port }}"
+    delay: 15
+    timeout: 120
+  when: not (molecule_test | default(false))
+
+- name: Deploy Nginx config for Jenkins
+  ansible.builtin.template:
+    src: nginx-jenkins.conf.j2
+    dest: /etc/nginx/sites-available/jenkins
+    mode: "0644"
+  notify: Reload Nginx
+
+- name: Enable Jenkins site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/jenkins
+    dest: /etc/nginx/sites-enabled/jenkins
+    state: link
+
+- name: Remove default Nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload Nginx
+
+- name: Ensure Nginx is started
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+
+- name: Configure HTTPS for Jenkins
+  ansible.builtin.command:
+    cmd: >
+      certbot --nginx -d {{ jenkins_domain }}
+      --non-interactive --agree-tos -m admin@sslip.io --redirect
+  changed_when: true
+  when: not (molecule_test | default(false))

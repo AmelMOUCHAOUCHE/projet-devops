@@ -1,0 +1,28 @@
+---
+- name: Verify SonarQube prerequisites
+  hosts: all
+  become: true
+  tasks:
+    - name: Check Java is installed
+      ansible.builtin.command: java -version
+      changed_when: false
+      register: java_version
+
+    - name: Assert Java 17 is installed
+      ansible.builtin.assert:
+        that: "'17' in java_version.stderr or '17' in java_version.stdout"
+        fail_msg: "Java 17 is not installed"
+
+    - name: Check sonar user exists
+      ansible.builtin.command: id sonar
+      changed_when: false
+
+    - name: Check vm.max_map_count
+      ansible.builtin.command: sysctl vm.max_map_count
+      changed_when: false
+      register: max_map
+
+    - name: Assert vm.max_map_count is set
+      ansible.builtin.assert:
+        that: "'262144' in max_map.stdout"
+        fail_msg: "vm.max_map_count is not set to 262144"

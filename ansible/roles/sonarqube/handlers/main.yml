@@ -1,0 +1,9 @@
+- name: Reload Nginx
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
+
+- name: Restart SonarQube
+  ansible.builtin.service:
+    name: sonarqube
+    state: restarted

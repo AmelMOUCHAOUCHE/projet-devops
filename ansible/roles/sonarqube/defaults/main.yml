@@ -1,0 +1,5 @@
+sonarqube_version: "10.4.1.88267"
+sonarqube_port: 9000
+sonarqube_domain: "sonar.{{ ansible_host }}.sslip.io"
+sonarqube_user: sonar
+sonarqube_install_dir: /opt/sonarqube

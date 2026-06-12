@@ -1,0 +1,114 @@
+- name: Install Java 17 and dependencies
+  ansible.builtin.apt:
+    name:
+      - openjdk-17-jdk
+      - unzip
+      - curl
+      - nginx
+      - certbot
+      - python3-certbot-nginx
+    state: present
+    update_cache: true
+
+- name: Set vm.max_map_count for Elasticsearch
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: "262144"
+    state: present
+    reload: true
+
+- name: Set fs.file-max
+  ansible.posix.sysctl:
+    name: fs.file-max
+    value: "65536"
+    state: present
+    reload: true
+
+- name: Create sonar user
+  ansible.builtin.user:
+    name: "{{ sonarqube_user }}"
+    system: true
+    shell: /bin/bash
+    create_home: false
+
+- name: Download SonarQube
+  ansible.builtin.get_url:
+    url: "https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-{{ sonarqube_version }}.zip"
+    dest: /tmp/sonarqube.zip
+    mode: "0644"
+  when: not (molecule_test | default(false))
+
+- name: Extract SonarQube
+  ansible.builtin.unarchive:
+    src: /tmp/sonarqube.zip
+    dest: /opt
+    remote_src: true
+    creates: "/opt/sonarqube-{{ sonarqube_version }}"
+    owner: "{{ sonarqube_user }}"
+  when: not (molecule_test | default(false))
+
+- name: Create symlink /opt/sonarqube
+  ansible.builtin.file:
+    src: "/opt/sonarqube-{{ sonarqube_version }}"
+    dest: "{{ sonarqube_install_dir }}"
+    state: link
+    owner: "{{ sonarqube_user }}"
+  when: not (molecule_test | default(false))
+
+- name: Set Java 17 as system default for SonarQube
+  ansible.builtin.command:
+    cmd: update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+  changed_when: false
+  when: not (molecule_test | default(false))
+
+- name: Deploy SonarQube systemd service
+  ansible.builtin.template:
+    src: sonarqube.service.j2
+    dest: /etc/systemd/system/sonarqube.service
+    mode: "0644"
+  notify: Restart SonarQube
+  when: not (molecule_test | default(false))
+
+- name: Enable and start SonarQube
+  ansible.builtin.service:
+    name: sonarqube
+    state: started
+    enabled: true
+  when: not (molecule_test | default(false))
+
+- name: Wait for SonarQube to be ready
+  ansible.builtin.wait_for:
+    port: "{{ sonarqube_port }}"
+    delay: 30
+    timeout: 180
+  when: not (molecule_test | default(false))
+
+- name: Deploy Nginx config for SonarQube
+  ansible.builtin.template:
+    src: nginx-sonar.conf.j2
+    dest: /etc/nginx/sites-available/sonarqube
+    mode: "0644"
+  notify: Reload Nginx
+  when: not (molecule_test | default(false))
+
+- name: Enable SonarQube site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/sonarqube
+    dest: /etc/nginx/sites-enabled/sonarqube
+    state: link
+  when: not (molecule_test | default(false))
+
+- name: Ensure Nginx is started
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+  when: not (molecule_test | default(false))
+
+- name: Configure HTTPS for SonarQube
+  ansible.builtin.command:
+    cmd: >
+      certbot --nginx -d {{ sonarqube_domain }}
+      --non-interactive --agree-tos -m admin@sslip.io --redirect
+  changed_when: true
+  when: not (molecule_test | default(false))

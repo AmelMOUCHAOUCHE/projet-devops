@@ -54,3 +54,4 @@
   roles:
     - jenkins
     - sonarqube
+    - nexus
